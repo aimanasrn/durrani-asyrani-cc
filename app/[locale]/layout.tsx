@@ -21,6 +21,8 @@ const plusJakarta = Plus_Jakarta_Sans({
   display: "swap",
 });
 
+export const runtime = "edge";
+
 export function generateStaticParams() {
   return [{ locale: "ms" }, { locale: "en" }];
 }

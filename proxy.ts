@@ -29,3 +29,5 @@ export const config = {
     "/((?!api|_next/static|_next/image|favicon.ico|images|icons|robots.txt|sitemap.xml|.*\\..*).*)",
   ],
 };
+
+export const runtime = "edge";
