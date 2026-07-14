@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1e1b4b; /* Deep Indigo/Navy */
+  --color-primary-light: #312e81;
+  --color-primary-dark: #0f172a;
+  
+  --color-brand-peach: #ffcad4; /* Soft peach */
+  --color-brand-peach-dark: #ffb5a7;
+  --color-brand-yellow: #f4d068; /* Muted yellow */
+  --color-brand-yellow-light: #fef9e7;
+  --color-brand-green: #a3b19b; /* Sage green */
+  --color-brand-green-light: #f0f4f1;
+  --color-brand-blue: #8ecafe; /* Sky blue */
+  --color-brand-blue-light: #f0f7ff;
+  
+  --color-cream-bg: #fdfaf6; /* Warm cream background */
+  --color-cream-card: #ffffff;
+  
+  --font-heading: 'Fredoka', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  
+  --radius-4xl: 2rem;
+  --radius-5xl: 2.5rem;
+}
+
+:root {
+  --background: #fdfaf6;
+  --foreground: #1e293b;
+}
+
+body {
+  background-color: var(--color-cream-bg);
+  color: var(--foreground);
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+/* Playful custom utility styles */
+.playful-shadow {
+  box-shadow: 0 10px 30px -10px rgba(179, 161, 143, 0.15);
+}
+
+.playful-shadow-hover {
+  transition: all 0.3s ease;
+}
+.playful-shadow-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -15px rgba(179, 161, 143, 0.25);
+}
+
+.focus-ring {
+  @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-peach-dark focus-visible:ring-offset-2;
+}
