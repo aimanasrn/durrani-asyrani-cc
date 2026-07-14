@@ -22,13 +22,14 @@ export default function ContactPage({ params }: PageProps) {
 
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset
-  } = useForm<ContactFormData>({
+  } = useForm<ContactFormData & { website?: string }>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
       parentName: "",
@@ -38,18 +39,41 @@ export default function ContactPage({ params }: PageProps) {
       preferredProgramme: "",
       preferredStartDate: "",
       message: "",
-      consent: false
+      consent: false,
+      website: ""
     }
   });
 
-  const onSubmit = async (data: ContactFormData) => {
+  const onSubmit = async (data: ContactFormData & { website?: string }) => {
     setIsSubmitting(true);
-    // Simulate API Submission
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Contact form submitted data:", data);
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    reset();
+    setSubmitError(null);
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+
+      const resData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(resData.message || "Failed to submit.");
+      }
+
+      setIsSuccess(true);
+      reset();
+    } catch (err: any) {
+      console.error("Contact form error:", err);
+      setSubmitError(
+        locale === "ms"
+          ? "Maaf, mesej tidak dapat dihantar. Sila cuba lagi atau hubungi kami melalui WhatsApp."
+          : "Sorry, the message could not be sent. Please try again or contact us via WhatsApp."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const programmeOptions = programmesList.map((prog) => ({
@@ -172,24 +196,44 @@ export default function ContactPage({ params }: PageProps) {
 
               {isSuccess ? (
                 <div className="flex flex-col items-center justify-center text-center py-10 px-4 gap-4">
-                  <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-2xs">
+                  <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-2xs animate-bounce">
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
                   <h4 className="font-heading font-bold text-xl text-slate-900">
-                    {translations.formLabels.successTitle[locale]}
+                    {locale === "ms" ? "Berjaya Dihantar!" : "Successfully Sent!"}
                   </h4>
-                  <p className="text-sm text-slate-655 max-w-sm leading-relaxed">
-                    {translations.formLabels.successMsgContact[locale]}
+                  <p className="text-sm text-slate-600 max-w-sm leading-relaxed">
+                    {locale === "ms"
+                      ? "Terima kasih! Mesej anda telah berjaya dihantar. Pihak kami akan menghubungi anda secepat mungkin."
+                      : "Thank you! Your message has been successfully sent. We will contact you as soon as possible."}
                   </p>
                   <button
                     onClick={() => setIsSuccess(false)}
-                    className="mt-4 px-6 py-2.5 rounded-2xl bg-primary text-white text-xs font-bold hover:bg-primary-light transition-colors"
+                    className="mt-4 px-6 py-2.5 rounded-2xl bg-primary text-white text-xs font-bold hover:bg-primary-light transition-colors cursor-pointer"
                   >
                     {locale === "ms" ? "Hantar Mesej Baru" : "Send Another Message"}
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+                  {submitError && (
+                    <div className="p-4 rounded-2xl bg-red-50 text-red-700 border border-red-100 text-xs sm:text-sm font-medium flex items-start gap-2.5">
+                      <span className="shrink-0 text-base mt-0.5">⚠️</span>
+                      <span className="leading-relaxed">{submitError}</span>
+                    </div>
+                  )}
+
+                  {/* Honeypot field - hidden from human users */}
+                  <div className="hidden" aria-hidden="true">
+                    <input
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      placeholder="Do not fill this"
+                      {...register("website")}
+                    />
+                  </div>
+
                   <FormField
                     label={translations.formLabels.parentName[locale]}
                     error={getErrorMessage(errors.parentName?.message, locale)}
@@ -198,6 +242,7 @@ export default function ContactPage({ params }: PageProps) {
                     <Input
                       placeholder={locale === "ms" ? "Contoh: Aishah binti Ali" : "Example: Jane Doe"}
                       error={!!errors.parentName}
+                      disabled={isSubmitting}
                       {...register("parentName")}
                     />
                   </FormField>
@@ -212,6 +257,7 @@ export default function ContactPage({ params }: PageProps) {
                         type="tel"
                         placeholder="e.g. +60132639114"
                         error={!!errors.phone}
+                        disabled={isSubmitting}
                         {...register("phone")}
                       />
                     </FormField>
@@ -225,6 +271,7 @@ export default function ContactPage({ params }: PageProps) {
                         type="email"
                         placeholder="e.g. email@gmail.com"
                         error={!!errors.email}
+                        disabled={isSubmitting}
                         {...register("email")}
                       />
                     </FormField>
@@ -239,6 +286,7 @@ export default function ContactPage({ params }: PageProps) {
                       <Input
                         placeholder="e.g. 3"
                         error={!!errors.childAge}
+                        disabled={isSubmitting}
                         {...register("childAge")}
                       />
                     </FormField>
@@ -252,6 +300,7 @@ export default function ContactPage({ params }: PageProps) {
                         options={programmeOptions}
                         placeholder={locale === "ms" ? "-- Pilih Program --" : "-- Select Programme --"}
                         error={!!errors.preferredProgramme}
+                        disabled={isSubmitting}
                         {...register("preferredProgramme")}
                       />
                     </FormField>
@@ -264,6 +313,7 @@ export default function ContactPage({ params }: PageProps) {
                       <Input
                         type="date"
                         error={!!errors.preferredStartDate}
+                        disabled={isSubmitting}
                         {...register("preferredStartDate")}
                       />
                     </FormField>
@@ -277,6 +327,7 @@ export default function ContactPage({ params }: PageProps) {
                     <Textarea
                       placeholder={locale === "ms" ? "Tuliskan sebarang soalan atau catatan khas anda di sini..." : "Write your questions or notes here..."}
                       error={!!errors.message}
+                      disabled={isSubmitting}
                       {...register("message")}
                     />
                   </FormField>
@@ -285,6 +336,7 @@ export default function ContactPage({ params }: PageProps) {
                     <Checkbox
                       label={translations.formLabels.consentContact[locale]}
                       error={!!errors.consent}
+                      disabled={isSubmitting}
                       {...register("consent")}
                     />
                   </FormField>
