@@ -1,5 +1,7 @@
 import { MetadataRoute } from "next";
 
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   // Replace with the final production domain once confirmed by the centre owner
   const baseUrl = "https://taskadurraniasyirani.com.my"; 
